@@ -16,11 +16,11 @@ function initDynamicWelcome() {
         let greeting = "Welcome to Study Hub";
 
         if (hour >= 5 && hour < 12) {
-            greeting = "☀️ Good Morning, Friend!";
+            greeting = "☀️ Good Morning, Ruby!";
         } else if (hour >= 12 && hour < 18) {
-            greeting = "🌤️ Good Afternoon!";
+            greeting = "🌤️ Good Afternoon, Ruby!";
         } else {
-            greeting = "🌙 Good Evening, Ráp Đọc Sách!";
+            greeting = "🌙 Good Evening, Ruby!";
         }
 
         welcomeTitle.textContent = greeting;
