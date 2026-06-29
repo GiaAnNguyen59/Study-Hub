@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule - Study Hub</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0">
+    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    
+    <style>
+        .schedule-container { padding: 20px; max-width: 1300px; margin: 0 auto; }
+        .schedule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .schedule-header h2 { font-size: 26px; color: #1d1d1d; font-weight: 600; }
+        .calendar-wrapper { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        :root {
+            --fc-border-color: #EFEAE4;
+            --fc-button-bg-color: #7B2CBF;
+            --fc-button-border-color: #7B2CBF;
+            --fc-button-hover-bg-color: #5a189a;
+            --fc-button-hover-border-color: #5a189a;
+            --fc-event-bg-color: #7B2CBF;
+            --fc-event-border-color: #7B2CBF;
+        }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: #1d1d1d; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; }
+        .btn-back:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <span class="material-symbols-rounded topbar-icon" onclick="window.location.href='../index.html'">home</span>
+        <nav class="breadcrumbs">
+            <a href="../index.html">Home</a><span>&gt;</span>
+            <a href="../index.html">Study Hub</a><span>&gt;</span>
+            <a href="#" class="active">Class Schedule</a>
+        </nav>
+    </header>
+
+    <main class="schedule-container">
+        <div class="schedule-header">
+            <h2>📅 Database-linked Class Calendar</h2>
+            <a href="../index.html" class="btn-back">
+                <span class="material-symbols-rounded">arrow_back</span> Dashboard
+            </a>
+        </div>
+        <div class="calendar-wrapper">
+            <div id="calendar"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 🛠️ 1. Thay thông số cấu hình Firebase của bro vào đây
+        const firebaseConfig = {
+            apiKey: "AIzaSyCysbIk78O21s1GDvyugqKoaW9359DA5dU",
+            authDomain: "class-schedule-fd46a.firebaseapp.com",
+            projectId: "class-schedule-fd46a",
+            storageBucket: "class-schedule-fd46a.firebasestorage.app",
+            messagingSenderId: "801515834308",
+            appId: "1:801515834308:web:7456fc2abfcd3b308c7291"
+        };
+
+        // Khởi tạo Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const eventsRef = collection(db, "schedules"); // Tên bảng/collection trong DB
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const calendarEl = document.getElementById('calendar');
+
+            // 📥 2. Tải dữ liệu từ Firebase Database về
+            let eventsData = [];
+            try {
+                const querySnapshot = await getDocs(eventsRef);
+                querySnapshot.forEach((doc) => {
+                    let data = doc.data();
+                    eventsData.push({
+                        id: doc.id, // Lưu ID của tài liệu để xóa/sửa sau này
+                        title: data.title,
+                        start: data.start,
+                        end: data.end,
+                        allDay: data.allDay
+                    });
+                });
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu từ DB:", error);
+            }
+
+            // Khởi tạo Lịch với dữ liệu từ DB
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                firstDay: 1,
+                slotMinTime: '06:00:00',
+                slotMaxTime: '22:00:00',
+                editable: true,
+                selectable: true,
+                events: eventsData,
+
+                // 📤 3. THÊM LỊCH MỚI LÊN DATABASE
+                select: async function(info) {
+                    const title = prompt('Nhập tên môn học / lịch trình:');
+                    if (title) {
+                        const newEvent = {
+                            title: title,
+                            start: info.startStr,
+                            end: info.endStr,
+                            allDay: info.allDay
+                        };
+
+                        try {
+                            // Lưu vào Firestore DB, Firebase sẽ trả về 1 ID tự động
+                            const docRef = await addDoc(eventsRef, newEvent);
+                            
+                            // Thêm vào giao diện hiển thị lịch kèm ID từ DB
+                            calendar.addEvent({
+                                id: docRef.id,
+                                ...newEvent
+                            });
+                        } catch (e) {
+                            alert("Không thể lưu vào database!");
+                            console.error(e);
+                        }
+                    }
+                    calendar.unselect();
+                },
+
+                // ❌ 4. XÓA LỊCH KHỎI DATABASE
+                eventClick: async function(info) {
+                    if (confirm(`Bạn có muốn xóa lịch học: "${info.event.title}" khỏi DB?`)) {
+                        try {
+                            // Tìm đúng tài liệu bằng ID và xóa trên DB
+                            await deleteDoc(doc(db, "schedules", info.event.id));
+                            info.event.remove();
+                        } catch (e) {
+                            alert("Xóa thất bại!");
+                        }
+                    }
+                },
+
+                // 🔄 5. CẬP NHẬT KHI KÉO THẢ TRÊN DATABASE
+                eventDrop: async function(info) {
+                    updateEventInDB(info.event);
+                },
+                eventResize: async function(info) {
+                    updateEventInDB(info.event);
+                }
+            });
+
+            calendar.render();
+
+            // Hàm cập nhật thời gian mới lên DB khi kéo thả ô
+            async function updateEventInDB(event) {
+                const docToUpdate = doc(db, "schedules", event.id);
+                try {
+                    await updateDoc(docToUpdate, {
+                        start: event.startStr,
+                        end: event.endStr
+                    });
+                } catch (e) {
+                    console.error("Lỗi cập nhật vị trí:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
