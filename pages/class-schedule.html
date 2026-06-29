@@ -93,11 +93,16 @@
 
             // Khởi tạo Lịch với dữ liệu từ DB
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
+                initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek', // 🌟 Tự động chọn chế độ Ngày nếu là điện thoại
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: window.innerWidth < 768 ? 'timeGridWeek,timeGridDay' : 'dayGridMonth,timeGridWeek,timeGridDay' // 🌟 Ẩn nút Tháng trên điện thoại cho đỡ chật
+                },
+                views: {
+                    timeGridDay: { buttonText: 'Ngày' },
+                    timeGridWeek: { buttonText: 'Tuần' },
+                    dayGridMonth: { buttonText: 'Tháng' }
                 },
                 firstDay: 1,
                 slotMinTime: '06:00:00',
