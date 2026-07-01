@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Resources - Study Hub</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0">
+    
+    <style>
+        .resource-container { padding: 20px; max-width: 1100px; margin: 0 auto; }
+        .resource-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .resource-header h2 { font-size: 26px; color: #1d1d1d; font-weight: 600; }
+        
+        /* Thanh điều hướng thư mục giống Google Drive (Breadcrumbs) */
+        .drive-breadcrumbs { display: flex; align-items: center; gap: 8px; background: #f4f5f7; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; font-size: 15px; }
+        .drive-crumb { color: #7B2CBF; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .drive-crumb:hover { text-decoration: underline; }
+        .drive-separator { color: #999; }
+        .drive-crumb.current { color: #1d1d1d; cursor: default; pointer-events: none; }
+
+        /* Khung tương tác Upload bọc gọn bên góc */
+        .drive-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .upload-zone { background: #fff; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .upload-zone input[type="file"] { max-width: 180px; font-size: 13px; }
+        
+        .btn-action { background: #7B2CBF; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 14px; }
+        .btn-action:hover { background: #5a189a; }
+        .btn-secondary { background: #f0e6ff; color: #7B2CBF; border: 1px solid #7B2CBF; }
+        .btn-secondary:hover { background: #e1ccff; }
+
+        /* Danh sách hiển thị Grid dạng Google Drive */
+        .drive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 10px; }
+        
+        /* Thẻ Thư mục */
+        .drive-item { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .drive-item:hover { background: #f8f5fc; border-color: #7B2CBF; transform: translateY(-2px); }
+        .drive-item .item-icon { font-size: 28px; }
+        .drive-item.folder .item-icon { color: #FFB703; } /* Thư mục màu vàng */
+        .drive-item.file .item-icon { color: #2196F3; } /* File màu xanh */
+        
+        .item-name { font-size: 14px; font-weight: 500; color: #1d1d1d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        
+        /* Nút xóa nhỏ góc phải */
+        .btn-item-delete { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff4d4d; cursor: pointer; display: none; opacity: 0.7; }
+        .drive-item:hover .btn-item-delete { display: inline-flex; }
+        .btn-item-delete:hover { opacity: 1; }
+
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: #1d1d1d; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; }
+        .btn-back:hover { background: #444; }
+        #upload-status { font-size: 13px; color: #7B2CBF; font-weight: 500; margin: 0; }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <span class="material-symbols-rounded topbar-icon" onclick="window.location.href='../index.html'">home</span>
+        <nav class="breadcrumbs">
+            <a href="../index.html">Home</a><span>&gt;</span>
+            <a href="../index.html">Study Hub</a><span>&gt;</span>
+            <a href="#" class="active">Research Resources</a>
+        </nav>
+    </header>
+
+    <main class="resource-container">
+        <div class="resource-header">
+            <h2>🤖 Study Drive Cloud</h2>
+            <a href="../index.html" class="btn-back">
+                <span class="material-symbols-rounded">arrow_back</span> Dashboard
+            </a>
+        </div>
+
+        <div class="drive-breadcrumbs" id="drive-crumbs-ui">
+            </div>
+
+        <div class="drive-toolbar">
+            <button class="btn-action btn-secondary" id="btn-new-folder">
+                <span class="material-symbols-rounded">create_new_folder</span> Thư mục mới
+            </button>
+            
+            <div class="upload-zone">
+                <input type="file" id="file-chooser">
+                <button class="btn-action" id="btn-submit-upload">
+                    <span class="material-symbols-rounded">upload_file</span> Tải file lên đây
+                </button>
+            </div>
+            <p id="upload-status" style="display: none;"></p>
+        </div>
+
+        <h3 style="font-size: 16px; color: #666; margin-bottom: 10px;">Thư mục & Tệp tin</h3>
+        <div class="drive-grid" id="drive-grid-ui">
+            </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCysbIk78O21s1GDvyugqKoaW9359DA5dU",
+            authDomain: "class-schedule-fd46a.firebaseapp.com",
+            projectId: "class-schedule-fd46a",
+            storageBucket: "class-schedule-fd46a.firebasestorage.app",
+            messagingSenderId: "801515834308",
+            appId: "1:801515834308:web:7456fc2abfcd3b308c7291"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const driveRef = collection(db, "drive");
+
+        // Quản lý trạng thái thư mục (Cơ chế hoạt động chính của Google Drive)
+        // 'root' nghĩa là đang ở thư mục gốc ngoài cùng
+        let currentFolderId = "root"; 
+        let folderPathHistory = [{ id: "root", name: "My Drive" }]; // Lịch sử đường dẫn để click quay lại
+        let allDriveItems = [];
+
+        document.addEventListener("DOMContentLoaded", fetchDriveData);
+
+        // 📥 1. Lấy toàn bộ dữ liệu Drive từ Database về
+        async function fetchDriveData() {
+            const gridUi = document.getElementById("drive-grid-ui");
+            gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu...</p>";
+            allDriveItems = [];
+
+            try {
+                const querySnapshot = await getDocs(driveRef);
+                querySnapshot.forEach((doc) => {
+                    allDriveItems.push({ id: doc.id, ...doc.data() });
+                });
+                renderDrive();
+            } catch (error) {
+                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu đám mây!</p>";
+                console.error(error);
+            }
+        }
+
+        // 🖼️ 2. Hàm lọc và hiển thị đúng dữ liệu thuộc thư mục đang mở
+        function renderDrive() {
+            renderCrumbs();
+            const gridUi = document.getElementById("drive-grid-ui");
+            
+            // Chỉ lọc ra các item có `parentId` trùng với thư mục đang đứng
+            const currentItems = allDriveItems.filter(item => item.parentId === currentFolderId);
+
+            if (currentItems.length === 0) {
+                gridUi.innerHTML = "<p style='color:#999; grid-column: 1/-1; text-align:center; padding: 40px 0;'>Thư mục này còn trống.</p>";
+                return;
+            }
+
+            // Sắp xếp thư mục lên trước, file ra sau
+            currentItems.sort((a, b) => b.isFolder - a.isFolder);
+
+            gridUi.innerHTML = currentItems.map(item => {
+                if (item.isFolder) {
+                    // Cấu trúc HTML cho Thư mục
+                    return `
+                        <div class="drive-item folder" onclick="navigateToFolder('${item.id}', '${item.name}')">
+                            <span class="material-symbols-rounded item-icon">folder</span>
+                            <span class="item-name">${item.name}</span>
+                            <button class="btn-item-delete" onclick="event.stopPropagation(); deleteItem('${item.id}', true, '')">
+                                <span class="material-symbols-rounded" style="font-size:20px;">delete</span>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Cấu trúc HTML cho Tệp tin (File)
+                    return `
+                        <div class="drive-item file" onclick="window.open('${item.downloadUrl}', '_blank')">
+                            <span class="material-symbols-rounded item-icon">description</span>
+                            <span class="item-name">${item.name}</span>
+                            <button class="btn-item-delete" onclick="event.stopPropagation(); deleteItem('${item.id}', false, '${item.storagePath}')">
+                                <span class="material-symbols-rounded" style="font-size:20px;">delete</span>
+                            </button>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // 🧭 3. Hàm vẽ thanh dẫn đường (Breadcrumbs) My Drive > Folder A > Folder B
+        function renderCrumbs() {
+            const crumbsUi = document.getElementById("drive-crumbs-ui");
+            crumbsUi.innerHTML = folderPathHistory.map((crumb, idx) => {
+                if (idx === folderPathHistory.length - 1) {
+                    return `<span class="drive-crumb current">${crumb.name}</span>`;
+                }
+                return `
+                    <span class="drive-crumb" onclick="clickCrumb(${idx})">${crumb.name}</span>
+                    <span class="drive-separator">&gt;</span>
+                `;
+            }).join('');
+        }
+
+        // Click đi sâu vào thư mục con
+        window.navigateToFolder = function(folderId, folderName) {
+            currentFolderId = folderId;
+            folderPathHistory.push({ id: folderId, name: folderName });
+            renderDrive();
+        }
+
+        // Click vào thanh breadcrumb quay lại thư mục cha
+        window.clickCrumb = function(index) {
+            folderPathHistory = folderPathHistory.slice(0, index + 1);
+            currentFolderId = folderPathHistory[index].id;
+            renderDrive();
+        }
+
+        // 📁 4. Tạo thư mục mới (Lưu log cấu trúc vào Firestore)
+        document.getElementById("btn-new-folder").addEventListener("click", async () => {
+            const folderName = prompt("Nhập tên thư mục mới:");
+            if (!folderName || folderName.trim() === "") return;
+
+            const newFolder = {
+                name: folderName.trim(),
+                isFolder: true,
+                parentId: currentFolderId, // Nằm trong thư mục hiện tại
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(driveRef, newFolder);
+                fetchDriveData();
+            } catch (error) {
+                alert("Không thể tạo thư mục!");
+            }
+        });
+
+        // 📄 5. Tải tệp tin (File) lên đúng vị trí thư mục đang mở
+        document.getElementById("btn-submit-upload").addEventListener("click", async () => {
+            const fileChooser = document.getElementById("file-chooser");
+            const statusText = document.getElementById("upload-status");
+            const file = fileChooser.files[0];
+
+            if (!file) {
+                alert("Vui lòng chọn 1 file từ máy tính trước!");
+                return;
+            }
+
+            statusText.style.display = "block";
+            statusText.innerText = "⏳ Đang tải file lên Drive...";
+
+            try {
+                const storagePath = `drive_files/${Date.now()}_${file.name}`;
+                const fileRef = ref(storage, storagePath);
+
+                const snapshot = await uploadBytes(fileRef, file);
+                const downloadUrl = await getDownloadURL(snapshot.ref);
+
+                // Ghi dữ liệu liên kết kèm `parentId` để biết file này ở thư mục nào
+                await addDoc(driveRef, {
+                    name: file.name,
+                    isFolder: false,
+                    downloadUrl: downloadUrl,
+                    storagePath: storagePath,
+                    parentId: currentFolderId, // Lưu chuẩn vị trí thư mục đang đứng
+                    createdAt: new Date().toISOString()
+                });
+
+                statusText.innerText = "✅ Tải lên hoàn tất!";
+                fileChooser.value = "";
+                setTimeout(() => statusText.style.display = "none", 3000);
+                
+                fetchDriveData();
+            } catch (error) {
+                statusText.innerText = "❌ Lỗi hệ thống khi tải lên.";
+                console.error(error);
+            }
+        });
+
+        // ❌ 6. Xóa thư mục hoặc file
+        window.deleteItem = async function(itemId, isFolder, storagePath) {
+            const msg = isFolder ? "Xóa thư mục này (Lưu ý: Bạn nên xóa các file bên trong trước)?" : "Xóa file này vĩnh viễn khỏi Drive?";
+            if (!confirm(msg)) return;
+
+            try {
+                if (!isFolder) {
+                    // Nếu là file, xóa file nhị phân trên Storage trước
+                    const fileRef = ref(storage, storagePath);
+                    await deleteObject(fileRef);
+                }
+                // Xóa tài liệu trên Firestore
+                await deleteDoc(doc(db, "drive", itemId));
+                fetchDriveData();
+            } catch (error) {
+                alert("Xóa thất bại!");
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
