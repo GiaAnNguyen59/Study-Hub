@@ -106,9 +106,9 @@
     <script>
         // 🛠️ ĐIỀN THÔNG SỐ CỦA BRO VÀO ĐÂY ĐỂ KẾT NỐI:
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_nFzDqZxXiKRfxydNxi3z6w_97-VguPJ";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
