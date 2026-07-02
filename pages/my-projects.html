@@ -102,20 +102,25 @@
         <div class="drive-grid" id="drive-grid-ui"></div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 🛠️ ĐIỀN THÔNG SỐ CỦA BRO VÀO ĐÂY ĐỂ KẾT NỐI:
+        // Định nghĩa các biến cấu hình trước
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
-
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Tạo biến rỗng trước để các hàm bên dưới nhận diện được tên biến
+        let supabase;
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
         let allDriveItems = [];
 
-        // Kiểm tra phiên đăng nhập tự động khi mở trang
+        // 🛠️ BẮT BUỘC CHỜ TRANG LOAD XONG 100% MỚI KHỞI TẠO ĐỂ TRÁNH LỖI "NOT DEFINED"
         window.onload = async () => {
+            // Khởi tạo client an toàn tại đây
+            supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Kiểm tra phiên đăng nhập tự động
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 document.getElementById("auth-screen").style.display = "none";
@@ -247,7 +252,6 @@
 
             const storagePath = `${Date.now()}_${file.name}`;
 
-            // Upload file thực tế bằng hàm củ Supabase (Có hỗ trợ theo dõi dung lượng)
             const { data, error } = await supabase.storage.from('drive').upload(storagePath, file, {
                 cacheControl: '3600',
                 upsert: false
@@ -261,7 +265,6 @@
 
             statusText.innerText = "⏳ Đồng bộ cấu trúc dữ liệu...";
 
-            // Lưu log thông tin vào Database để quản lý cây thư mục
             const { error: dbError } = await supabase.from('drive').insert([
                 { name: file.name, is_folder: false, parent_id: currentFolderId, storage_path: storagePath }
             ]);
@@ -292,11 +295,9 @@
             if (!confirm(msg)) return;
 
             if (!isFolder) {
-                // Xóa file nhị phân trong kho Storage trước
                 await supabase.storage.from('drive').remove([storagePath]);
             }
 
-            // Xóa dòng ghi chú log trong Database
             const { error } = await supabase.from('drive').delete().eq('id', itemId);
             if (error) alert("Xóa thất bại!");
             else fetchDriveData();
