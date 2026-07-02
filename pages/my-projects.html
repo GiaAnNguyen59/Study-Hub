@@ -126,15 +126,22 @@
                                     headers: { 'apikey': key, 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ email, password })
                                 });
+                                
                                 const data = await response.json();
-                                if (data.error || data.error_description) {
-                                    return { data: null, error: { message: data.error_description || data.error } };
+                        
+                                // MẸO: Nếu HTTP status không ok (400, 401, v.v.) hoặc có object error trả về từ Supabase
+                                if (!response.ok || data.error || data.error_description) {
+                                    return { 
+                                        data: null, 
+                                        error: { message: data.error_description || data.error || `Lỗi đăng nhập (${response.status})` } 
+                                    };
                                 }
+                        
                                 const session = { access_token: data.access_token, token_type: data.token_type, expires_in: data.expires_in, refresh_token: data.refresh_token, user: data.user };
                                 localStorage.setItem(`sb-${url}-auth-token`, JSON.stringify(session));
                                 return { data: { session }, error: null };
-                            } catch (err) {
-                                return { data: null, error: err };
+                            } catch (err) { 
+                                return { data: null, error: err }; 
                             }
                         },
                         signOut: async () => {
