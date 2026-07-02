@@ -282,25 +282,33 @@
             }
         };
 
-        document.getElementById("btn-login").addEventListener("click", async () => {
+       document.getElementById("btn-login").addEventListener("click", async () => {
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
-
-            if (!email || !password) {
-                alert("Nhập đủ tài khoản mật khẩu đã bro ơi!");
-                return;
+            
+            if (!email || !password) { 
+                alert("Nhập đủ tài khoản mật khẩu đã bro ơi!"); 
+                return; 
             }
-
+            
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert("Mật khẩu hoặc Email sai rồi bro ơi!");
+                
+                // Nếu Supabase trả về lỗi (sai pass/sai email), báo lỗi và RETURN luôn để chặn không cho chạy tiếp xuống dưới
+                if (error) { 
+                    alert("Mật khẩu hoặc Email sai rồi bro ơi! Vui lòng kiểm tra lại."); 
+                    return; 
+                } 
+                
+                // Chỉ khi KHÔNG CÓ LỖI (đăng nhập thành công) thì mới ẩn màn hình đăng nhập và tải data
+                if (data && data.session) {
+                    document.getElementById("auth-screen").style.display = "none"; 
+                    fetchDriveData(); 
                 } else {
-                    document.getElementById("auth-screen").style.display = "none";
-                    fetchDriveData();
+                    alert("Không tìm thấy phiên đăng nhập hợp lệ!");
                 }
-            } catch (err) {
-                alert("Có lỗi xảy ra khi xử lý đăng nhập!");
+            } catch (err) { 
+                alert("Có lỗi xảy ra khi xử lý đăng nhập!"); 
             }
         });
 
