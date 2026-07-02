@@ -102,69 +102,38 @@
         <div class="drive-grid" id="drive-grid-ui"></div>
     </main>
     
-   <script>
-    !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).Supabase={})}(this,(function(e){"use strict";/*! *****************************************************************************
-    Copyright (c) Microsoft Corporation.
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    function t(e,t,r,n){return new(r||(r=Promise))((function(o,i){function a(e){try{c(n.next(e))}catch(e){i(e)}}function s(e){try{c(n.throw(e))}catch(e){i(e)}}function c(e){var t;e.done?o(e.value):(t=e.value,t instanceof r?t:new r((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))}function r(e,t){var r,n,o,i,a={label:0,sent:function(){if(1&o[0])throw o[1];return o[1]},trys:[],ops:[]};return i={next:s(0),throw:s(1),return:s(2)},"function"==typeof Symbol&&(i[Symbol.iterator]=function(){return this}),i;function s(s){return function(c){return function(s){if(r)throw new TypeError("Generator is already executing.");for(;i&&(r=1,n&&(o=2&s[0]?n.return:s[0]?n.throw||((o=n.return)&&o.call(n),0):n.next)&&!(o=o.call(n,s[1])).done);)return o;if(n=0,o)try{s=[2&s[0],o.value]}catch(e){s=[6,e],n=0}finally{r=0}switch(s[0]){case 0:case 1:t=s;break;case 4:return a.label++,{value:s[1],done:!1};case 5:a.label++,n=s[1],s=[0];continue;case 7:s=a.ops.pop(),a.trys.pop();continue;default:if(!(o=a.trys,o=o.length>0&&o[o.length-1])&&(6==s[0]||2==s[0])){a=0;continue}if(3==s[0]&&(!o||s[1]>o[0]&&s[1]<o[3])){a.label=s[1];break}if(6==s[0]&&a.label<o[1]){a.label=o[1],o=s;break}if(o&&a.label<o[2]){a.label=o[2],a.ops.push(s);break}o[2]&&a.ops.pop(),a.trys.pop();continue}hd=t.call(e,a)}([s,c])}}}class n{constructor(e){this.auth=e}getSession(){return t(this,void 0,void 0,(function(){var e;return r(this,(function(t){return(e=localStorage.getItem("sb-"+this.auth.url+"-auth-token"))?([2,{data:{session:JSON.parse(e)},error:null}]):[2,{data:{session:null},error:null})})})))}signInWithPassword(e){return t(this,void 0,void 0,(function(){var n,o,i,a=this;return r(this,(function(s){return n=e.email,o=e.password,i=this.auth.url+"/auth/v1/token?grant_type=password",[2,fetch(i,{method:"POST",headers:{"apikey":this.auth.key,"Content-Type":"application/json"},body:JSON.stringify({email:n,password:o})}).then((function(e){return e.json()})).then((function(e){if(e.error_description||e.error)return{data:{session:null},error:{message:e.error_description||e.error}};var t={access_token:e.access_token,token_type:e.token_type,expires_in:e.expires_in,refresh_token:e.refresh_token,user:e.user};return localStorage.setItem("sb-"+a.auth.url+"-auth-token",JSON.stringify(t)),{data:{session:t},error:null}}).catch((function(e){return{data:null,error:e}}))]})))}signOut(){return t(this,void 0,void 0,(function(){return r(this,(function(e){return localStorage.removeItem("sb-"+this.auth.url+"-auth-token"),[2,{error:null}]}))}))}}class o{constructor(e,t){this.url=e,this.table=t.table,this.key=t.key}select(e){var t=this.url+"/rest/v1/"+this.table+"?"+(e||"*");return[2,fetch(t,{method:"GET",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}insert(e){var t=this.url+"/rest/v1/"+this.table;return[2,fetch(t,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(e)}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}delete(){return this}eq(e,t){var r=this.url+"/rest/v1/"+this.table+"?"+e+"=eq."+t;return[2,fetch(r,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return{error:null}})).catch((function(e){return{error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class i{constructor(e,t){this.url=e,this.bucket=t.bucket,this.key=t.key}upload(e,t){var r=this.url+"/storage/v1/object/"+this.bucket+"/"+e,n=new FormData;return n.append("file",t),[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()},body:n}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}createSignedUrl(e,t){var r=this.url+"/storage/v1/object/sign/"+this.bucket+"/"+e;return[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({expiresIn:t})}).then((function(e){return e.json()})).then((function(e){return{data:{signedUrl:this.url+"/storage/v1"+e.signedURL},error:null}}).bind(this)).catch((function(e){return{data:null,error:e}}))]}remove(e){var t=this.url+"/storage/v1/object/"+this.bucket;return[2,fetch(t,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({prefixes:e})}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class a{constructor(e,t){this.url=e,this.bucket=t,this.key=e}upload(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).upload(e,t)}createSignedUrl(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).createSignedUrl(e,t)}remove(e){return(new i(this.url,{bucket:this.bucket,key:this.key})).remove(e)}}class s{constructor(e,t){this.url=e,this.key=t,this.auth=new n(this)}static createClient(e,t){return new s(e,t)}from(e){return new o(this.url,{table:e,key:this.key})}get storage(){return{from:e=>new a(this.url,e,this.key)}}}e.createClient=function(e,t){return new s(e,t)},Object.defineProperty(e,"__esModule",{value:!0})}));
+    <script>
+    !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).Supabase={})}(this,(function(e){"use strict";function t(e,t,r,n){return new(r||(r=Promise))((function(o,i){function a(e){try{c(n.next(e))}catch(e){i(e)}}function s(e){try{c(n.throw(e))}catch(e){i(e)}}function c(e){var t;e.done?o(e.value):(t=e.value,t instanceof r?t:new r((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))}function r(e,t){var r,n,o,i,a={label:0,sent:function(){if(1&o[0])throw o[1];return o[1]},trys:[],ops:[]};return i={next:s(0),throw:s(1),return:s(2)},"function"==typeof Symbol&&(i[Symbol.iterator]=function(){return this}),i;function s(s){return function(c){return function(s){if(r)throw new TypeError("Generator is already executing.");for(;i&&(r=1,n&&(o=2&s[0]?n.return:s[0]?n.throw||((o=n.return)&&o.call(n),0):n.next)&&!(o=o.call(n,s[1])).done);)return o;if(n=0,o)try{s=[2&s[0],o.value]}catch(e){s=[6,e],n=0}finally{r=0}switch(s[0]){case 0:case 1:t=s;break;case 4:return a.label++,{value:s[1],done:!1};case 5:a.label++,n=s[1],s=[0];continue;case 7:s=a.ops.pop(),a.trys.pop();continue;default:if(!(o=a.trys,o=o.length>0&&o[o.length-1])&&(6==s[0]||2==s[0])){a=0;continue}if(3==s[0]&&(!o||s[1]>o[0]&&s[1]<o[3])){a.label=s[1];break}if(6==s[0]&&a.label<o[1]){a.label=o[1],o=s;break}if(o&&a.label<o[2]){a.label=o[2],a.ops.push(s);break}o[2]&&a.ops.pop(),a.trys.pop();continue}hd=t.call(e,a)}([s,c])}}}class n{constructor(e){this.auth=e}getSession(){return t(this,void 0,void 0,(function(){var e;return r(this,(function(t){return(e=localStorage.getItem("sb-"+this.auth.url+"-auth-token"))?([2,{data:{session:JSON.parse(e)},error:null}]):[2,{data:{session:null},error:null})})})))}signInWithPassword(e){return t(this,void 0,void 0,(function(){var n,o,i,a=this;return r(this,(function(s){return n=e.email,o=e.password,i=this.auth.url+"/auth/v1/token?grant_type=password",[2,fetch(i,{method:"POST",headers:{"apikey":this.auth.key,"Content-Type":"application/json"},body:JSON.stringify({email:n,password:o})}).then((function(e){return e.json()})).then((function(e){if(e.error_description||e.error)return{data:{session:null},error:{message:e.error_description||e.error}};var t={access_token:e.access_token,token_type:e.token_type,expires_in:e.expires_in,refresh_token:e.refresh_token,user:e.user};return localStorage.setItem("sb-"+a.auth.url+"-auth-token",JSON.stringify(t)),{data:{session:t},error:null}}).catch((function(e){return{data:null,error:e}}))]})))}signOut(){return t(this,void 0,void 0,(function(){return r(this,(function(e){return localStorage.removeItem("sb-"+this.auth.url+"-auth-token"),[2,{error:null}]}))}))}}class o{constructor(e,t){this.url=e,this.table=t.table,this.key=t.key}select(e){var t=this.url+"/rest/v1/"+this.table+"?"+(e||"*");return[2,fetch(t,{method:"GET",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}insert(e){var t=this.url+"/rest/v1/"+this.table;return[2,fetch(t,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(e)}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}delete(){return this}eq(e,t){var r=this.url+"/rest/v1/"+this.table+"?"+e+"=eq."+t;return[2,fetch(r,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return{error:null}})).catch((function(e){return{error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class i{constructor(e,t){this.url=e,this.bucket=t.bucket,this.key=t.key}upload(e,t){var r=this.url+"/storage/v1/object/"+this.bucket+"/"+e,n=new FormData;return n.append("file",t),[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()},body:n}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}createSignedUrl(e,t){var r=this.url+"/storage/v1/object/sign/"+this.bucket+"/"+e;return[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({expiresIn:t})}).then((function(e){return e.json()})).then((function(e){return{data:{signedUrl:this.url+"/storage/v1"+e.signedURL},error:null}}).bind(this)).catch((function(e){return{data:null,error:e}}))]}remove(e){var t=this.url+"/storage/v1/object/"+this.bucket;return[2,fetch(t,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({prefixes:e})}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class a{constructor(e,t){this.url=e,this.bucket=t,this.key=e}upload(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).upload(e,t)}createSignedUrl(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).createSignedUrl(e,t)}remove(e){return(new i(this.url,{bucket:this.bucket,key:this.key})).remove(e)}}class s{constructor(e,t){this.url=e,this.key=t,this.auth=new n(this)}static createClient(e,t){return new s(e,t)}from(e){return new o(this.url,{table:e,key:this.key})}get storage(){return{from:e=>new a(this.url,e,this.key)}}}e.createClient=function(幕,r){return new s(幕,r)},Object.defineProperty(e,"__esModule",{value:!0})}));
     </script>
+
     <script>
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
         
-        let supabase;
-
-        // Khởi tạo Client ngay lập tức một cách an toàn
-        try {
-            if (typeof Supabase !== 'undefined') {
-                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                console.error("Thư viện Supabase CDN chưa tải được. Đang thử lại qua window.onload...");
-            }
-        } catch (e) {
-            console.error("Lỗi khởi tạo Supabase ban đầu:", e);
-        }
+        // Khởi tạo trực tiếp biến supabase từ lõi nhúng bảo mật bên trên
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
         let allDriveItems = [];
 
-        // Kiểm tra lại khi trang load xong hoàn toàn (để bọc lót nếu CDN load chậm)
+        // Kiểm tra phiên đăng nhập cũ khi tải trang
         window.onload = async () => {
-            if (!supabase && typeof Supabase !== 'undefined') {
-                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-
             if (supabase) {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    document.getElementById("auth-screen").style.display = "none";
-                    fetchDriveData();
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        document.getElementById("auth-screen").style.display = "none";
+                        fetchDriveData();
+                    }
+                } catch(e) {
+                    console.error("Lỗi kiểm tra session tự động:", e);
                 }
             }
         };
 
         // Xử lý nút ĐĂNG NHẬP
         document.getElementById("btn-login").addEventListener("click", async () => {
-            // Nếu vô tình chưa có supabase thì khởi tạo khẩn cấp để cứu nút bấm
-            if (!supabase && typeof Supabase !== 'undefined') {
-                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-
-            if (!supabase) {
-                alert("Lỗi mạng: Không thể kết nối tới máy chủ Supabase. Bro ép F5 tải lại trang xem!");
-                return;
-            }
-
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
 
@@ -176,14 +145,14 @@
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    alert("Mật khẩu hoặc Email sai rồi bro ơi!");
+                    alert("Mật khẩu hoặc Email sai rồi bro ơi! Hoặc tài khoản chưa được kích hoạt.");
                 } else {
                     document.getElementById("auth-screen").style.display = "none";
                     fetchDriveData();
                 }
             } catch (err) {
                 console.error("Lỗi thực thi hàm login:", err);
-                alert("Có lỗi xảy ra khi xử lý đăng nhập!");
+                alert("Có lỗi xảy ra khi xử lý kết nối máy chủ xác thực!");
             }
         });
 
@@ -198,14 +167,19 @@
             const gridUi = document.getElementById("drive-grid-ui");
             gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu Supabase...</p>";
 
-            const { data, error } = await supabase.from('drive').select('*');
-            if (error) {
-                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
-                console.error(error);
-                return;
+            try {
+                const { data, error } = await supabase.from('drive').select('*');
+                if (error) {
+                    gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
+                    console.error(error);
+                    return;
+                }
+                allDriveItems = data || [];
+                renderDrive();
+            } catch(err) {
+                gridUi.innerHTML = "<p>Lỗi đồng bộ dữ liệu hệ thống!</p>";
+                console.error(err);
             }
-            allDriveItems = data || [];
-            renderDrive();
         }
 
         // 🖼️ 2. Vẽ giao diện Drive theo thư mục hiện tại
