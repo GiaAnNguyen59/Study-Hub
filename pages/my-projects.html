@@ -107,7 +107,10 @@
             createClient: (url, key) => {
                 const getAuthToken = () => {
                     const sessionData = localStorage.getItem(`sb-${url}-auth-token`);
-                    return sessionData ? JSON.parse(sessionData).access_token : "";
+                    if (!sessionData) return "";
+                    try {
+                        return JSON.parse(sessionData).access_token || "";
+                    } catch(e) { return ""; }
                 };
 
                 return {
@@ -143,10 +146,15 @@
                         return {
                             select: async (columns = '*') => {
                                 try {
+                                    const token = getAuthToken();
+                                    const headers = { 'apikey': key };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                                     const response = await fetch(`${url}/rest/v1/${table}?select=${columns}`, {
                                         method: 'GET',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` }
+                                        headers: headers
                                     });
+                                    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                                     return { data: await response.json(), error: null };
                                 } catch (err) {
                                     return { data: null, error: err };
@@ -154,11 +162,20 @@
                             },
                             insert: async (payload) => {
                                 try {
+                                    const token = getAuthToken();
+                                    const headers = { 
+                                        'apikey': key, 
+                                        'Content-Type': 'application/json', 
+                                        'Prefer': 'return=representation' 
+                                    };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                                     const response = await fetch(`${url}/rest/v1/${table}`, {
                                         method: 'POST',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+                                        headers: headers,
                                         body: JSON.stringify(payload)
                                     });
+                                    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                                     return { data: await response.json(), error: null };
                                 } catch (err) {
                                     return { data: null, error: err };
@@ -170,9 +187,13 @@
                             },
                             eq: async function(column, value) {
                                 try {
+                                    const token = getAuthToken();
+                                    const headers = { 'apikey': key };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                                     const response = await fetch(`${url}/rest/v1/${table}?${column}=eq.${value}`, {
                                         method: this._method || 'DELETE',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` }
+                                        headers: headers
                                     });
                                     return { error: null };
                                 } catch (err) {
@@ -185,13 +206,17 @@
                         from: (bucket) => ({
                             upload: async (path, file) => {
                                 try {
-                                    const formData = new FormData();
-                                    formData.append('file', file);
-                                    const response = await fetch(`${url}/storage/v1/object/${bucket}/${path}`, {
+                                    const token = getAuthToken();
+                                    const headers = { 'apikey': key };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                                    // Sử dụng truyền thẳng nhị phân (Binary body) thay vì FormData để tránh lỗi Multi-part 400 mã hóa tên file tiếng Việt
+                                    const response = await fetch(`${url}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`, {
                                         method: 'POST',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` },
-                                        body: formData
+                                        headers: headers,
+                                        body: file
                                     });
+                                    if (!response.ok) throw new Error(`Upload Error ${response.status}`);
                                     return { data: await response.json(), error: null };
                                 } catch (err) {
                                     return { data: null, error: err };
@@ -199,9 +224,13 @@
                             },
                             createSignedUrl: async (path, expiresIn) => {
                                 try {
-                                    const response = await fetch(`${url}/storage/v1/object/sign/${bucket}/${path}`, {
+                                    const token = getAuthToken();
+                                    const headers = { 'apikey': key, 'Content-Type': 'application/json' };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                                    const response = await fetch(`${url}/storage/v1/object/sign/${bucket}/${encodeURIComponent(path)}`, {
                                         method: 'POST',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+                                        headers: headers,
                                         body: JSON.stringify({ expiresIn })
                                     });
                                     const resData = await response.json();
@@ -212,9 +241,13 @@
                             },
                             remove: async (paths) => {
                                 try {
+                                    const token = getAuthToken();
+                                    const headers = { 'apikey': key, 'Content-Type': 'application/json' };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                                     const response = await fetch(`${url}/storage/v1/object/${bucket}`, {
                                         method: 'DELETE',
-                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+                                        headers: headers,
                                         body: JSON.stringify({ prefixes: paths })
                                     });
                                     return { data: await response.json(), error: null };
@@ -249,7 +282,6 @@
             }
         };
 
-        // Xử lý nút ĐĂNG NHẬP
         document.getElementById("btn-login").addEventListener("click", async () => {
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
@@ -268,33 +300,34 @@
                     fetchDriveData();
                 }
             } catch (err) {
-                console.error("Lỗi thực thi hàm login:", err);
                 alert("Có lỗi xảy ra khi xử lý đăng nhập!");
             }
         });
 
-        // Xử lý ĐĂNG XUẤT
         document.getElementById("btn-logout").addEventListener("click", async () => {
             if(supabase) await supabase.auth.signOut();
             location.reload();
         });
 
-        // Lấy dữ liệu danh mục Drive
         async function fetchDriveData() {
             const gridUi = document.getElementById("drive-grid-ui");
             gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu Supabase...</p>";
 
-            const { data, error } = await supabase.from('drive').select('*');
-            if (error) {
-                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
-                console.error(error);
-                return;
+            try {
+                const { data, error } = await supabase.from('drive').select('*');
+                if (error) {
+                    // Nếu vẫn dính 403, nhắc nhở cấu hình RLS thẳng trên UI
+                    gridUi.innerHTML = `<p style='color:red;'>Lỗi kết nối bộ nhớ (403/RLS Blocked)! <br>Bro hãy vào Supabase Dashboard -> Table drive -> bấm DISABLE RLS nhé!</p>`;
+                    console.error(error);
+                    return;
+                }
+                allDriveItems = data || [];
+                renderDrive();
+            } catch(e) {
+                gridUi.innerHTML = "<p>Lỗi xử lý đồng bộ mạng.</p>";
             }
-            allDriveItems = data || [];
-            renderDrive();
         }
 
-        // Vẽ giao diện Drive
         function renderDrive() {
             renderCrumbs();
             const gridUi = document.getElementById("drive-grid-ui");
@@ -363,7 +396,7 @@
                 { name: folderName.trim(), is_folder: true, parent_id: currentFolderId }
             ]);
 
-            if (error) alert("Không thể tạo thư mục!");
+            if (error) alert("Không thể tạo thư mục! Hãy chắc chắn đã tắt RLS cho bảng này.");
             else fetchDriveData();
         });
 
@@ -381,12 +414,14 @@
             statusText.style.display = "block";
             statusText.innerText = "⏳ Đang kết nối Supabase Storage...";
 
-            const storagePath = `${Date.now()}_${file.name}`;
+            // Chuyển đổi tên file sạch để chống lỗi kí tự đặc biệt tiếng Việt
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+            const storagePath = `${Date.now()}_${cleanName}`;
 
             const { data, error } = await supabase.storage.from('drive').upload(storagePath, file);
 
             if (error) {
-                statusText.innerText = "❌ Tải lên thất bại!";
+                statusText.innerText = "❌ Tải lên Storage thất bại! Kiểm tra lại chính sách Policy Storage.";
                 console.error(error);
                 return;
             }
@@ -398,7 +433,7 @@
             ]);
 
             if (dbError) {
-                statusText.innerText = "❌ Lỗi lưu dữ liệu cấu trúc.";
+                statusText.innerText = "❌ Lỗi lưu dữ liệu cấu trúc (Hãy kiểm tra RLS).";
             } else {
                 statusText.innerText = "✅ Tải lên đám mây thành công 100%!";
                 fileChooser.value = "";
@@ -407,17 +442,15 @@
             }
         });
 
-        // Lấy link tải file bảo mật
         window.downloadFile = async function(storagePath) {
             const { data, error } = await supabase.storage.from('drive').createSignedUrl(storagePath, 60);
             if (error) {
-                alert("Không thể tạo liên kết tải file bảo mật!");
+                alert("Không thể tạo liên kết tải file!");
             } else {
                 window.open(data.signedUrl, '_blank');
             }
         }
 
-        // Xóa thư mục hoặc file
         window.deleteItem = async function(itemId, isFolder, storagePath) {
             const msg = isFolder ? "Xóa thư mục này?" : "Xóa file này vĩnh viễn khỏi đám mây Supabase?";
             if (!confirm(msg)) return;
