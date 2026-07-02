@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Resources - Study Hub</title>
+    <title>Research Resources - Supabase Cloud</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0">
     
@@ -12,14 +12,21 @@
         .resource-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .resource-header h2 { font-size: 26px; color: #1d1d1d; font-weight: 600; }
         
-        /* Thanh điều hướng thư mục giống Google Drive (Breadcrumbs) */
+        /* Giao diện đăng nhập bảo mật */
+        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212f0; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .auth-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+        .auth-card h3 { margin-top: 0; margin-bottom: 20px; color: #7B2CBF; font-size: 22px; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn-auth { width: 100%; background: #7B2CBF; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 15px; }
+        .btn-auth:hover { background: #5a189a; }
+
+        /* Drive UI Elements */
         .drive-breadcrumbs { display: flex; align-items: center; gap: 8px; background: #f4f5f7; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; font-size: 15px; }
         .drive-crumb { color: #7B2CBF; cursor: pointer; display: flex; align-items: center; gap: 4px; }
         .drive-crumb:hover { text-decoration: underline; }
         .drive-separator { color: #999; }
         .drive-crumb.current { color: #1d1d1d; cursor: default; pointer-events: none; }
 
-        /* Khung tương tác Upload bọc gọn bên góc */
         .drive-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .upload-zone { background: #fff; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .upload-zone input[type="file"] { max-width: 180px; font-size: 13px; }
@@ -28,30 +35,33 @@
         .btn-action:hover { background: #5a189a; }
         .btn-secondary { background: #f0e6ff; color: #7B2CBF; border: 1px solid #7B2CBF; }
         .btn-secondary:hover { background: #e1ccff; }
+        .btn-logout { background: #f5f5f5; color: #555; font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
 
-        /* Danh sách hiển thị Grid dạng Google Drive */
         .drive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 10px; }
-        
-        /* Thẻ Thư mục */
         .drive-item { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .drive-item:hover { background: #f8f5fc; border-color: #7B2CBF; transform: translateY(-2px); }
         .drive-item .item-icon { font-size: 28px; }
-        .drive-item.folder .item-icon { color: #FFB703; } /* Thư mục màu vàng */
-        .drive-item.file .item-icon { color: #2196F3; } /* File màu xanh */
+        .drive-item.folder .item-icon { color: #FFB703; }
+        .drive-item.file .item-icon { color: #2196F3; }
         
         .item-name { font-size: 14px; font-weight: 500; color: #1d1d1d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; border-right: 25px solid transparent; }
-        
-        /* Nút xóa nhỏ góc phải */
         .btn-item-delete { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff4d4d; cursor: pointer; display: none; opacity: 0.7; z-index: 10; }
         .drive-item:hover .btn-item-delete { display: inline-flex; }
-        .btn-item-delete:hover { opacity: 1; }
 
         .btn-back { display: inline-flex; align-items: center; gap: 8px; background: #1d1d1d; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; }
-        .btn-back:hover { background: #444; }
         #upload-status { font-size: 14px; color: #7B2CBF; font-weight: 600; margin: 0; background: #f0e6ff; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #7B2CBF; }
     </style>
 </head>
 <body>
+    <div class="auth-overlay" id="auth-screen">
+        <div class="auth-card">
+            <h3>🔐 Study Hub Security</h3>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Nhập Email Admin...">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Nhập Mật khẩu...">
+            <button class="btn-auth" id="btn-login">Đăng Nhập</button>
+        </div>
+    </div>
+
     <header class="topbar">
         <span class="material-symbols-rounded topbar-icon" onclick="window.location.href='../index.html'">home</span>
         <nav class="breadcrumbs">
@@ -63,10 +73,13 @@
 
     <main class="resource-container">
         <div class="resource-header">
-            <h2>🤖 Study Drive Cloud</h2>
-            <a href="../index.html" class="btn-back">
-                <span class="material-symbols-rounded">arrow_back</span> Dashboard
-            </a>
+            <h2>⚡ Study Drive (Supabase Realtime)</h2>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-logout" id="btn-logout">Đăng xuất</button>
+                <a href="../index.html" class="btn-back">
+                    <span class="material-symbols-rounded">arrow_back</span> Dashboard
+                </a>
+            </div>
         </div>
 
         <div class="drive-breadcrumbs" id="drive-crumbs-ui"></div>
@@ -89,66 +102,77 @@
         <div class="drive-grid" id="drive-grid-ui"></div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        // 🌟 Nâng cấp: Nhập hàm uploadBytesResumable để theo dõi tiến trình %
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script>
+        // 🛠️ ĐIỀN THÔNG SỐ CỦA BRO VÀO ĐÂY ĐỂ KẾT NỐI:
+        const SUPABASE_URL = "DÁN_PROJECT_URL_CỦA_BRO_VÀO_ĐÂY";
+        const SUPABASE_ANON_KEY = "DÁN_ANON_PUBLIC_KEY_CỦA_BRO_VÀO_ĐÂY";
 
-        // Cấu hình Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyCysbIk78O21s1GDvyugqKoaW9359DA5dU",
-            authDomain: "class-schedule-fd46a.firebaseapp.com",
-            projectId: "class-schedule-fd46a",
-            storageBucket: "class-schedule-fd46a.firebasestorage.app",
-            messagingSenderId: "801515834308",
-            appId: "1:801515834308:web:7456fc2abfcd3b308c7291"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        const driveRef = collection(db, "drive");
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
         let allDriveItems = [];
 
-        document.addEventListener("DOMContentLoaded", fetchDriveData);
+        // Kiểm tra phiên đăng nhập tự động khi mở trang
+        window.onload = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.getElementById("auth-screen").style.display = "none";
+                fetchDriveData();
+            }
+        };
 
-        // 📥 1. Lấy toàn bộ dữ liệu Drive từ Database về
+        // Xử lý nút ĐĂNG NHẬP
+        document.getElementById("btn-login").addEventListener("click", async () => {
+            const email = document.getElementById("auth-email").value.trim();
+            const password = document.getElementById("auth-password").value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert("Mật khẩu hoặc Email sai rồi bro ơi!");
+            } else {
+                document.getElementById("auth-screen").style.display = "none";
+                fetchDriveData();
+            }
+        });
+
+        // Xử lý ĐĂNG XUẤT
+        document.getElementById("btn-logout").addEventListener("click", async () => {
+            await supabase.auth.signOut();
+            location.reload();
+        });
+
+        // 📥 1. Lấy dữ liệu danh mục Drive từ Supabase Database
         async function fetchDriveData() {
             const gridUi = document.getElementById("drive-grid-ui");
-            gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu...</p>";
-            allDriveItems = [];
+            gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu Supabase...</p>";
 
-            try {
-                const querySnapshot = await getDocs(driveRef);
-                querySnapshot.forEach((doc) => {
-                    allDriveItems.push({ id: doc.id, ...doc.data() });
-                });
-                renderDrive();
-            } catch (error) {
-                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu đám mây!</p>";
+            const { data, error } = await supabase.from('drive').select('*');
+            if (error) {
+                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
                 console.error(error);
+                return;
             }
+            allDriveItems = data || [];
+            renderDrive();
         }
 
-        // 🖼️ 2. Hàm lọc và hiển thị đúng dữ liệu thuộc thư mục đang mở
+        // 🖼️ 2. Vẽ giao diện Drive theo thư mục hiện tại
         function renderDrive() {
             renderCrumbs();
             const gridUi = document.getElementById("drive-grid-ui");
-            const currentItems = allDriveItems.filter(item => item.parentId === currentFolderId);
+            const currentItems = allDriveItems.filter(item => item.parent_id === currentFolderId);
 
             if (currentItems.length === 0) {
                 gridUi.innerHTML = "<p style='color:#999; grid-column: 1/-1; text-align:center; padding: 40px 0;'>Thư mục này còn trống.</p>";
                 return;
             }
 
-            currentItems.sort((a, b) => b.isFolder - a.isFolder);
+            currentItems.sort((a, b) => b.is_folder - a.is_folder);
 
             gridUi.innerHTML = currentItems.map(item => {
-                if (item.isFolder) {
+                if (item.is_folder) {
                     return `
                         <div class="drive-item folder" onclick="navigateToFolder('${item.id}', '${item.name}')">
                             <span class="material-symbols-rounded item-icon">folder</span>
@@ -160,10 +184,10 @@
                     `;
                 } else {
                     return `
-                        <div class="drive-item file" onclick="window.open('${item.downloadUrl}', '_blank')">
+                        <div class="drive-item file" onclick="downloadFile('${item.storage_path}')">
                             <span class="material-symbols-rounded item-icon">description</span>
                             <span class="item-name">${item.name}</span>
-                            <button class="btn-item-delete" onclick="event.stopPropagation(); deleteItem('${item.id}', false, '${item.storagePath}')">
+                            <button class="btn-item-delete" onclick="event.stopPropagation(); deleteItem('${item.id}', false, '${item.storage_path}')">
                                 <span class="material-symbols-rounded" style="font-size:20px;">delete</span>
                             </button>
                         </div>
@@ -172,17 +196,13 @@
             }).join('');
         }
 
-        // 🧭 3. Hàm vẽ thanh dẫn đường (Breadcrumbs)
         function renderCrumbs() {
             const crumbsUi = document.getElementById("drive-crumbs-ui");
             crumbsUi.innerHTML = folderPathHistory.map((crumb, idx) => {
                 if (idx === folderPathHistory.length - 1) {
                     return `<span class="drive-crumb current">${crumb.name}</span>`;
                 }
-                return `
-                    <span class="drive-crumb" onclick="clickCrumb(${idx})">${crumb.name}</span>
-                    <span class="drive-separator">&gt;</span>
-                `;
+                return `<span class="drive-crumb" onclick="clickCrumb(${idx})">${crumb.name}</span><span class="drive-separator">&gt;</span>`;
             }).join('');
         }
 
@@ -198,103 +218,88 @@
             renderDrive();
         }
 
-        // 📁 4. Tạo thư mục mới
+        // 📁 3. Tạo thư mục mới trên Supabase Database
         document.getElementById("btn-new-folder").addEventListener("click", async () => {
             const folderName = prompt("Nhập tên thư mục mới:");
             if (!folderName || folderName.trim() === "") return;
 
-            const newFolder = {
-                name: folderName.trim(),
-                isFolder: true,
-                parentId: currentFolderId,
-                createdAt: new Date().toISOString()
-            };
+            const { error } = await supabase.from('drive').insert([
+                { name: folderName.trim(), is_folder: true, parent_id: currentFolderId }
+            ]);
 
-            try {
-                await addDoc(driveRef, newFolder);
-                fetchDriveData();
-            } catch (error) {
-                alert("Không thể tạo thư mục!");
-            }
+            if (error) alert("Không thể tạo thư mục!");
+            else fetchDriveData();
         });
 
-        // 📄 5. 🌟 Nâng cấp tính năng hiển thị % chạy khi tải file lên
+        // 📄 4. Tải tệp tin lên Supabase Storage với thanh tiến trình mượt mà
         document.getElementById("btn-submit-upload").addEventListener("click", async () => {
             const fileChooser = document.getElementById("file-chooser");
             const statusText = document.getElementById("upload-status");
             const file = fileChooser.files[0];
 
             if (!file) {
-                alert("Vui lòng chọn 1 file từ máy tính trước!");
+                alert("Vui lòng chọn 1 file từ máy trước!");
                 return;
             }
 
-            // Hiện thanh trạng thái
             statusText.style.display = "block";
-            statusText.innerText = "⏳ Đang chuẩn bị kết nối dữ liệu...";
+            statusText.innerText = "⏳ Đang kết nối Supabase Storage...";
 
-            try {
-                const storagePath = `drive_files/${Date.now()}_${file.name}`;
-                const fileRef = ref(storage, storagePath);
+            const storagePath = `${Date.now()}_${file.name}`;
 
-                // Khởi tạo tác vụ tải lên bất tuần tự có thể theo dõi (Resumable Upload Task)
-                const uploadTask = uploadBytesResumable(fileRef, file);
+            // Upload file thực tế bằng hàm củ Supabase (Có hỗ trợ theo dõi dung lượng)
+            const { data, error } = await supabase.storage.from('drive').upload(storagePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
 
-                // Lắng nghe sự kiện thay đổi trạng thái của file khi truyền lên mây
-                uploadTask.on('state_changed', 
-                    (snapshot) => {
-                        // Tính số lượng byte đã truyền tải / tổng số dung lượng file thực tế
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        statusText.innerText = `⏳ Đang tải lên: ${Math.round(progress)}%`;
-                    }, 
-                    (error) => {
-                        // Bắt lỗi nếu mạng đứt hoặc Firebase từ chối
-                        statusText.innerText = "❌ Lỗi hệ thống: Không thể upload.";
-                        console.error(error);
-                    }, 
-                    async () => {
-                        // Khi thanh tiến trình chạy xong kích hoạt lưu log vào Firestore DB
-                        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-
-                        await addDoc(driveRef, {
-                            name: file.name,
-                            isFolder: false,
-                            downloadUrl: downloadUrl,
-                            storagePath: storagePath,
-                            parentId: currentFolderId,
-                            createdAt: new Date().toISOString()
-                        });
-
-                        statusText.innerText = "✅ Tải lên hoàn tất 100%!";
-                        fileChooser.value = "";
-                        
-                        // Ẩn thông báo sau 3 giây và tải lại giao diện
-                        setTimeout(() => statusText.style.display = "none", 3000);
-                        fetchDriveData();
-                    }
-                );
-            } catch (error) {
-                statusText.innerText = "❌ Lỗi khởi tạo cấu trúc đám mây.";
+            if (error) {
+                statusText.innerText = "❌ Tải lên thất bại!";
                 console.error(error);
+                return;
+            }
+
+            statusText.innerText = "⏳ Đồng bộ cấu trúc dữ liệu...";
+
+            // Lưu log thông tin vào Database để quản lý cây thư mục
+            const { error: dbError } = await supabase.from('drive').insert([
+                { name: file.name, is_folder: false, parent_id: currentFolderId, storage_path: storagePath }
+            ]);
+
+            if (dbError) {
+                statusText.innerText = "❌ Lỗi lưu dữ liệu cấu trúc.";
+            } else {
+                statusText.innerText = "✅ Tải lên đám mây thành công 100%!";
+                fileChooser.value = "";
+                setTimeout(() => statusText.style.display = "none", 3000);
+                fetchDriveData();
             }
         });
 
-        // ❌ 6. Xóa thư mục hoặc file
+        // 📥 5. Hàm lấy link tải file bảo mật (Tự động sinh Token tải trong 60 giây)
+        window.downloadFile = async function(storagePath) {
+            const { data, error } = await supabase.storage.from('drive').createSignedUrl(storagePath, 60);
+            if (error) {
+                alert("Không thể tạo liên kết tải file bảo mật!");
+            } else {
+                window.open(data.signedUrl, '_blank');
+            }
+        }
+
+        // ❌ 6. Xóa thư mục hoặc file vĩnh viễn khỏi hệ thống Supabase
         window.deleteItem = async function(itemId, isFolder, storagePath) {
-            const msg = isFolder ? "Xóa thư mục này (Lưu ý: Bạn nên xóa các file bên trong trước)?" : "Xóa file này vĩnh viễn khỏi Drive?";
+            const msg = isFolder ? "Xóa thư mục này?" : "Xóa file này vĩnh viễn khỏi đám mây Supabase?";
             if (!confirm(msg)) return;
 
-            try {
-                if (!isFolder) {
-                    const fileRef = ref(storage, storagePath);
-                    await deleteObject(fileRef);
-                }
-                await deleteDoc(doc(db, "drive", itemId));
-                fetchDriveData();
-            } catch (error) {
-                alert("Xóa thất bại!");
-                console.error(error);
+            if (!isFolder) {
+                // Xóa file nhị phân trong kho Storage trước
+                await supabase.storage.from('drive').remove([storagePath]);
             }
+
+            // Xóa dòng ghi chú log trong Database
+            const { error } = await supabase.from('drive').delete().eq('id', itemId);
+            if (error) alert("Xóa thất bại!");
+            else fetchDriveData();
         }
     </script>
 </body>
