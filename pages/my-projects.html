@@ -102,49 +102,80 @@
         <div class="drive-grid" id="drive-grid-ui"></div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
     <script>
-        // Định nghĩa các biến cấu hình trước
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
         
-        // Tạo biến rỗng trước để các hàm bên dưới nhận diện được tên biến
         let supabase;
+
+        // Khởi tạo Client ngay lập tức một cách an toàn
+        try {
+            if (typeof Supabase !== 'undefined') {
+                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.error("Thư viện Supabase CDN chưa tải được. Đang thử lại qua window.onload...");
+            }
+        } catch (e) {
+            console.error("Lỗi khởi tạo Supabase ban đầu:", e);
+        }
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
         let allDriveItems = [];
 
-        // 🛠️ BẮT BUỘC CHỜ TRANG LOAD XONG 100% MỚI KHỞI TẠO ĐỂ TRÁNH LỖI "NOT DEFINED"
+        // Kiểm tra lại khi trang load xong hoàn toàn (để bọc lót nếu CDN load chậm)
         window.onload = async () => {
-            // Khởi tạo client an toàn tại đây
-            supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (!supabase && typeof Supabase !== 'undefined') {
+                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
 
-            // Kiểm tra phiên đăng nhập tự động
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                document.getElementById("auth-screen").style.display = "none";
-                fetchDriveData();
+            if (supabase) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    document.getElementById("auth-screen").style.display = "none";
+                    fetchDriveData();
+                }
             }
         };
 
         // Xử lý nút ĐĂNG NHẬP
         document.getElementById("btn-login").addEventListener("click", async () => {
+            // Nếu vô tình chưa có supabase thì khởi tạo khẩn cấp để cứu nút bấm
+            if (!supabase && typeof Supabase !== 'undefined') {
+                supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+
+            if (!supabase) {
+                alert("Lỗi mạng: Không thể kết nối tới máy chủ Supabase. Bro ép F5 tải lại trang xem!");
+                return;
+            }
+
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert("Mật khẩu hoặc Email sai rồi bro ơi!");
-            } else {
-                document.getElementById("auth-screen").style.display = "none";
-                fetchDriveData();
+            if (!email || !password) {
+                alert("Nhập đủ tài khoản mật khẩu đã bro ơi!");
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert("Mật khẩu hoặc Email sai rồi bro ơi!");
+                } else {
+                    document.getElementById("auth-screen").style.display = "none";
+                    fetchDriveData();
+                }
+            } catch (err) {
+                console.error("Lỗi thực thi hàm login:", err);
+                alert("Có lỗi xảy ra khi xử lý đăng nhập!");
             }
         });
 
         // Xử lý ĐĂNG XUẤT
         document.getElementById("btn-logout").addEventListener("click", async () => {
-            await supabase.auth.signOut();
+            if(supabase) await supabase.auth.signOut();
             location.reload();
         });
 
@@ -236,7 +267,7 @@
             else fetchDriveData();
         });
 
-        // 📄 4. Tải tệp tin lên Supabase Storage với thanh tiến trình mượt mà
+        // 📄 4. Tải tệp tin lên Supabase Storage
         document.getElementById("btn-submit-upload").addEventListener("click", async () => {
             const fileChooser = document.getElementById("file-chooser");
             const statusText = document.getElementById("upload-status");
@@ -279,7 +310,7 @@
             }
         });
 
-        // 📥 5. Hàm lấy link tải file bảo mật (Tự động sinh Token tải trong 60 giây)
+        // 📥 5. Hàm lấy link tải file bảo mật
         window.downloadFile = async function(storagePath) {
             const { data, error } = await supabase.storage.from('drive').createSignedUrl(storagePath, 60);
             if (error) {
@@ -289,7 +320,7 @@
             }
         }
 
-        // ❌ 6. Xóa thư mục hoặc file vĩnh viễn khỏi hệ thống Supabase
+        // ❌ 6. Xóa thư mục hoặc file vĩnh viễn
         window.deleteItem = async function(itemId, isFolder, storagePath) {
             const msg = isFolder ? "Xóa thư mục này?" : "Xóa file này vĩnh viễn khỏi đám mây Supabase?";
             if (!confirm(msg)) return;
