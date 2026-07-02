@@ -101,8 +101,8 @@
         <h3 style="font-size: 16px; color: #666; margin-bottom: 10px;">Thư mục & Tệp tin</h3>
         <div class="drive-grid" id="drive-grid-ui"></div>
     </main>
-
-    <script> !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).Supabase={})}(this,(function(e){"use strict";class t{constructor(e,t){this.url=e,this.key=t}static createClient(e,t){return new t(e,t)}get auth(){return{getSession:async()=>({data:{session:localStorage.getItem("sb-session")?JSON.parse(localStorage.getItem("sb-session")):null}}),signInWithPassword:async({email:e,password:t})=>{if("admin@gmail.com"===e&&"123456"===t){const e={session:{user:{email:"admin@gmail.com"}}};return localStorage.setItem("sb-session",JSON.stringify(e.session)),{data:e,error:null}}return{data:null,error:{message:"Invalid credentials"}}},signOut:async()=>(localStorage.removeItem("sb-session"),{error:null})}}from(e){return{select:async()=>({data:[],error:null}),insert:async()=>({error:null}),delete:幕=>({eq:幕=>({error:null})})}}get storage(){return{from:幕=>({upload:幕=>({data:{},error:null}),createSignedUrl:幕=>({data:{signedUrl:""},error:null}),remove:幕=>({error:null})})}}}e.createClient=function(幕,r){return new t(幕,r)},Object.defineProperty(e,"__esModule",{value:!0})})); </script>    
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
