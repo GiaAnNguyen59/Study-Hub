@@ -292,15 +292,18 @@
             }
             
             try {
+                // MẸO: Xóa sạch phiên đăng nhập cũ trong bộ nhớ trước khi gửi yêu cầu mới
+                if (supabase) await supabase.auth.signOut();
+        
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 
-                // Nếu Supabase trả về lỗi (sai pass/sai email), báo lỗi và RETURN luôn để chặn không cho chạy tiếp xuống dưới
+                // Nếu sai pass/email
                 if (error) { 
                     alert("Mật khẩu hoặc Email sai rồi bro ơi! Vui lòng kiểm tra lại."); 
                     return; 
                 } 
                 
-                // Chỉ khi KHÔNG CÓ LỖI (đăng nhập thành công) thì mới ẩn màn hình đăng nhập và tải data
+                // Nếu đúng pass
                 if (data && data.session) {
                     document.getElementById("auth-screen").style.display = "none"; 
                     fetchDriveData(); 
