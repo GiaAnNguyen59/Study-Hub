@@ -103,31 +103,148 @@
     </main>
     
     <script>
-    !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).Supabase={})}(this,(function(e){"use strict";function t(e,t,r,n){return new(r||(r=Promise))((function(o,i){function a(e){try{c(n.next(e))}catch(e){i(e)}}function s(e){try{c(n.throw(e))}catch(e){i(e)}}function c(e){var t;e.done?o(e.value):(t=e.value,t instanceof r?t:new r((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))}function r(e,t){var r,n,o,i,a={label:0,sent:function(){if(1&o[0])throw o[1];return o[1]},trys:[],ops:[]};return i={next:s(0),throw:s(1),return:s(2)},"function"==typeof Symbol&&(i[Symbol.iterator]=function(){return this}),i;function s(s){return function(c){return function(s){if(r)throw new TypeError("Generator is already executing.");for(;i&&(r=1,n&&(o=2&s[0]?n.return:s[0]?n.throw||((o=n.return)&&o.call(n),0):n.next)&&!(o=o.call(n,s[1])).done);)return o;if(n=0,o)try{s=[2&s[0],o.value]}catch(e){s=[6,e],n=0}finally{r=0}switch(s[0]){case 0:case 1:t=s;break;case 4:return a.label++,{value:s[1],done:!1};case 5:a.label++,n=s[1],s=[0];continue;case 7:s=a.ops.pop(),a.trys.pop();continue;default:if(!(o=a.trys,o=o.length>0&&o[o.length-1])&&(6==s[0]||2==s[0])){a=0;continue}if(3==s[0]&&(!o||s[1]>o[0]&&s[1]<o[3])){a.label=s[1];break}if(6==s[0]&&a.label<o[1]){a.label=o[1],o=s;break}if(o&&a.label<o[2]){a.label=o[2],a.ops.push(s);break}o[2]&&a.ops.pop(),a.trys.pop();continue}hd=t.call(e,a)}([s,c])}}}class n{constructor(e){this.auth=e}getSession(){return t(this,void 0,void 0,(function(){var e;return r(this,(function(t){return(e=localStorage.getItem("sb-"+this.auth.url+"-auth-token"))?([2,{data:{session:JSON.parse(e)},error:null}]):[2,{data:{session:null},error:null})})})))}signInWithPassword(e){return t(this,void 0,void 0,(function(){var n,o,i,a=this;return r(this,(function(s){return n=e.email,o=e.password,i=this.auth.url+"/auth/v1/token?grant_type=password",[2,fetch(i,{method:"POST",headers:{"apikey":this.auth.key,"Content-Type":"application/json"},body:JSON.stringify({email:n,password:o})}).then((function(e){return e.json()})).then((function(e){if(e.error_description||e.error)return{data:{session:null},error:{message:e.error_description||e.error}};var t={access_token:e.access_token,token_type:e.token_type,expires_in:e.expires_in,refresh_token:e.refresh_token,user:e.user};return localStorage.setItem("sb-"+a.auth.url+"-auth-token",JSON.stringify(t)),{data:{session:t},error:null}}).catch((function(e){return{data:null,error:e}}))]})))}signOut(){return t(this,void 0,void 0,(function(){return r(this,(function(e){return localStorage.removeItem("sb-"+this.auth.url+"-auth-token"),[2,{error:null}]}))}))}}class o{constructor(e,t){this.url=e,this.table=t.table,this.key=t.key}select(e){var t=this.url+"/rest/v1/"+this.table+"?"+(e||"*");return[2,fetch(t,{method:"GET",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}insert(e){var t=this.url+"/rest/v1/"+this.table;return[2,fetch(t,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(e)}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}delete(){return this}eq(e,t){var r=this.url+"/rest/v1/"+this.table+"?"+e+"=eq."+t;return[2,fetch(r,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()}}).then((function(e){return{error:null}})).catch((function(e){return{error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class i{constructor(e,t){this.url=e,this.bucket=t.bucket,this.key=t.key}upload(e,t){var r=this.url+"/storage/v1/object/"+this.bucket+"/"+e,n=new FormData;return n.append("file",t),[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken()},body:n}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}createSignedUrl(e,t){var r=this.url+"/storage/v1/object/sign/"+this.bucket+"/"+e;return[2,fetch(r,{method:"POST",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({expiresIn:t})}).then((function(e){return e.json()})).then((function(e){return{data:{signedUrl:this.url+"/storage/v1"+e.signedURL},error:null}}).bind(this)).catch((function(e){return{data:null,error:e}}))]}remove(e){var t=this.url+"/storage/v1/object/"+this.bucket;return[2,fetch(t,{method:"DELETE",headers:{"apikey":this.key,"Authorization":"Bearer "+this.getAccessToken(),"Content-Type":"application/json"},body:JSON.stringify({prefixes:e})}).then((function(e){return e.json()})).then((function(e){return{data:e,error:null}})).catch((function(e){return{data:null,error:e}}))]}getAccessToken(){var e=localStorage.getItem("sb-"+this.url+"-auth-token");return e?JSON.parse(e).access_token:""}}class a{constructor(e,t){this.url=e,this.bucket=t,this.key=e}upload(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).upload(e,t)}createSignedUrl(e,t){return(new i(this.url,{bucket:this.bucket,key:this.key})).createSignedUrl(e,t)}remove(e){return(new i(this.url,{bucket:this.bucket,key:this.key})).remove(e)}}class s{constructor(e,t){this.url=e,this.key=t,this.auth=new n(this)}static createClient(e,t){return new s(e,t)}from(e){return new o(this.url,{table:e,key:this.key})}get storage(){return{from:e=>new a(this.url,e,this.key)}}}e.createClient=function(幕,r){return new s(幕,r)},Object.defineProperty(e,"__esModule",{value:!0})}));
+        const Supabase = {
+            createClient: (url, key) => {
+                const getAuthToken = () => {
+                    const sessionData = localStorage.getItem(`sb-${url}-auth-token`);
+                    return sessionData ? JSON.parse(sessionData).access_token : "";
+                };
+
+                return {
+                    auth: {
+                        getSession: async () => {
+                            const sessionData = localStorage.getItem(`sb-${url}-auth-token`);
+                            return sessionData ? { data: { session: JSON.parse(sessionData) }, error: null } : { data: { session: null }, error: null };
+                        },
+                        signInWithPassword: async ({ email, password }) => {
+                            try {
+                                const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+                                    method: 'POST',
+                                    headers: { 'apikey': key, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ email, password })
+                                });
+                                const data = await response.json();
+                                if (data.error || data.error_description) {
+                                    return { data: null, error: { message: data.error_description || data.error } };
+                                }
+                                const session = { access_token: data.access_token, token_type: data.token_type, expires_in: data.expires_in, refresh_token: data.refresh_token, user: data.user };
+                                localStorage.setItem(`sb-${url}-auth-token`, JSON.stringify(session));
+                                return { data: { session }, error: null };
+                            } catch (err) {
+                                return { data: null, error: err };
+                            }
+                        },
+                        signOut: async () => {
+                            localStorage.removeItem(`sb-${url}-auth-token`);
+                            return { error: null };
+                        }
+                    },
+                    from: (table) => {
+                        return {
+                            select: async (columns = '*') => {
+                                try {
+                                    const response = await fetch(`${url}/rest/v1/${table}?select=${columns}`, {
+                                        method: 'GET',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` }
+                                    });
+                                    return { data: await response.json(), error: null };
+                                } catch (err) {
+                                    return { data: null, error: err };
+                                }
+                            },
+                            insert: async (payload) => {
+                                try {
+                                    const response = await fetch(`${url}/rest/v1/${table}`, {
+                                        method: 'POST',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+                                        body: JSON.stringify(payload)
+                                    });
+                                    return { data: await response.json(), error: null };
+                                } catch (err) {
+                                    return { data: null, error: err };
+                                }
+                            },
+                            delete: function() {
+                                this._method = 'DELETE';
+                                return this;
+                            },
+                            eq: async function(column, value) {
+                                try {
+                                    const response = await fetch(`${url}/rest/v1/${table}?${column}=eq.${value}`, {
+                                        method: this._method || 'DELETE',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` }
+                                    });
+                                    return { error: null };
+                                } catch (err) {
+                                    return { error: err };
+                                }
+                            }
+                        };
+                    },
+                    storage: {
+                        from: (bucket) => ({
+                            upload: async (path, file) => {
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    const response = await fetch(`${url}/storage/v1/object/${bucket}/${path}`, {
+                                        method: 'POST',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}` },
+                                        body: formData
+                                    });
+                                    return { data: await response.json(), error: null };
+                                } catch (err) {
+                                    return { data: null, error: err };
+                                }
+                            },
+                            createSignedUrl: async (path, expiresIn) => {
+                                try {
+                                    const response = await fetch(`${url}/storage/v1/object/sign/${bucket}/${path}`, {
+                                        method: 'POST',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ expiresIn })
+                                    });
+                                    const resData = await response.json();
+                                    return { data: { signedUrl: `${url}/storage/v1${resData.signedURL}` }, error: null };
+                                } catch (err) {
+                                    return { data: null, error: err };
+                                }
+                            },
+                            remove: async (paths) => {
+                                try {
+                                    const response = await fetch(`${url}/storage/v1/object/${bucket}`, {
+                                        method: 'DELETE',
+                                        headers: { 'apikey': key, 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ prefixes: paths })
+                                    });
+                                    return { data: await response.json(), error: null };
+                                } catch (err) {
+                                    return { data: null, error: err };
+                                }
+                            }
+                        })
+                    }
+                };
+            }
+        };
     </script>
 
     <script>
         const SUPABASE_URL = "https://gtzofdpccnksdyqqqzhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0em9mZHBjY25rc2R5cXFxemh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjA3NDEsImV4cCI6MjA5ODUzNjc0MX0.mBC3FUhHQv43QYTeERS-q210q-9SgeX52SPqJYRbqLQ";
         
-        // Khởi tạo trực tiếp biến supabase từ lõi nhúng bảo mật bên trên
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentFolderId = "root"; 
         let folderPathHistory = [{ id: "root", name: "My Drive" }]; 
         let allDriveItems = [];
 
-        // Kiểm tra phiên đăng nhập cũ khi tải trang
         window.onload = async () => {
             if (supabase) {
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        document.getElementById("auth-screen").style.display = "none";
-                        fetchDriveData();
-                    }
-                } catch(e) {
-                    console.error("Lỗi kiểm tra session tự động:", e);
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    document.getElementById("auth-screen").style.display = "none";
+                    fetchDriveData();
                 }
             }
         };
@@ -145,14 +262,14 @@
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    alert("Mật khẩu hoặc Email sai rồi bro ơi! Hoặc tài khoản chưa được kích hoạt.");
+                    alert("Mật khẩu hoặc Email sai rồi bro ơi!");
                 } else {
                     document.getElementById("auth-screen").style.display = "none";
                     fetchDriveData();
                 }
             } catch (err) {
                 console.error("Lỗi thực thi hàm login:", err);
-                alert("Có lỗi xảy ra khi xử lý kết nối máy chủ xác thực!");
+                alert("Có lỗi xảy ra khi xử lý đăng nhập!");
             }
         });
 
@@ -162,27 +279,22 @@
             location.reload();
         });
 
-        // 📥 1. Lấy dữ liệu danh mục Drive từ Supabase Database
+        // Lấy dữ liệu danh mục Drive
         async function fetchDriveData() {
             const gridUi = document.getElementById("drive-grid-ui");
             gridUi.innerHTML = "<p>Đang đồng bộ dữ liệu Supabase...</p>";
 
-            try {
-                const { data, error } = await supabase.from('drive').select('*');
-                if (error) {
-                    gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
-                    console.error(error);
-                    return;
-                }
-                allDriveItems = data || [];
-                renderDrive();
-            } catch(err) {
-                gridUi.innerHTML = "<p>Lỗi đồng bộ dữ liệu hệ thống!</p>";
-                console.error(err);
+            const { data, error } = await supabase.from('drive').select('*');
+            if (error) {
+                gridUi.innerHTML = "<p>Lỗi kết nối bộ nhớ dữ liệu!</p>";
+                console.error(error);
+                return;
             }
+            allDriveItems = data || [];
+            renderDrive();
         }
 
-        // 🖼️ 2. Vẽ giao diện Drive theo thư mục hiện tại
+        // Vẽ giao diện Drive
         function renderDrive() {
             renderCrumbs();
             const gridUi = document.getElementById("drive-grid-ui");
@@ -242,7 +354,7 @@
             renderDrive();
         }
 
-        // 📁 3. Tạo thư mục mới trên Supabase Database
+        // Tạo thư mục mới
         document.getElementById("btn-new-folder").addEventListener("click", async () => {
             const folderName = prompt("Nhập tên thư mục mới:");
             if (!folderName || folderName.trim() === "") return;
@@ -255,7 +367,7 @@
             else fetchDriveData();
         });
 
-        // 📄 4. Tải tệp tin lên Supabase Storage
+        // Tải tệp tin lên
         document.getElementById("btn-submit-upload").addEventListener("click", async () => {
             const fileChooser = document.getElementById("file-chooser");
             const statusText = document.getElementById("upload-status");
@@ -271,10 +383,7 @@
 
             const storagePath = `${Date.now()}_${file.name}`;
 
-            const { data, error } = await supabase.storage.from('drive').upload(storagePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
+            const { data, error } = await supabase.storage.from('drive').upload(storagePath, file);
 
             if (error) {
                 statusText.innerText = "❌ Tải lên thất bại!";
@@ -298,7 +407,7 @@
             }
         });
 
-        // 📥 5. Hàm lấy link tải file bảo mật
+        // Lấy link tải file bảo mật
         window.downloadFile = async function(storagePath) {
             const { data, error } = await supabase.storage.from('drive').createSignedUrl(storagePath, 60);
             if (error) {
@@ -308,7 +417,7 @@
             }
         }
 
-        // ❌ 6. Xóa thư mục hoặc file vĩnh viễn
+        // Xóa thư mục hoặc file
         window.deleteItem = async function(itemId, isFolder, storagePath) {
             const msg = isFolder ? "Xóa thư mục này?" : "Xóa file này vĩnh viễn khỏi đám mây Supabase?";
             if (!confirm(msg)) return;
