@@ -129,11 +129,11 @@
                                 
                                 const data = await response.json();
                         
-                                // MẸO: Nếu HTTP status không ok (400, 401, v.v.) hoặc có object error trả về từ Supabase
+                                // SỬA LỖI: Bắt chặt mã trạng thái HTTP không thành công từ máy chủ Supabase
                                 if (!response.ok || data.error || data.error_description) {
                                     return { 
                                         data: null, 
-                                        error: { message: data.error_description || data.error || `Lỗi đăng nhập (${response.status})` } 
+                                        error: { message: data.error_description || data.error || `Lỗi xác thực (${response.status})` } 
                                     };
                                 }
                         
@@ -198,7 +198,7 @@
                                     const headers = { 'apikey': key };
                                     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                                    const response = await fetch(`${url}/rest/v1/${table}?${column}=eq.${value}`, {
+                                    await fetch(`${url}/rest/v1/${table}?${column}=eq.${value}`, {
                                         method: this._method || 'DELETE',
                                         headers: headers
                                     });
@@ -289,7 +289,7 @@
             }
         };
 
-       document.getElementById("btn-login").addEventListener("click", async () => {
+        document.getElementById("btn-login").addEventListener("click", async () => {
             const email = document.getElementById("auth-email").value.trim();
             const password = document.getElementById("auth-password").value;
             
@@ -299,18 +299,18 @@
             }
             
             try {
-                // MẸO: Xóa sạch phiên đăng nhập cũ trong bộ nhớ trước khi gửi yêu cầu mới
-                if (supabase) await supabase.auth.signOut();
+                // SỬA LỖI: Buộc xóa session/token cũ ngay lập tức để thực hiện quy trình kiểm tra mới sạch sẽ
+                localStorage.removeItem(`sb-${SUPABASE_URL}-auth-token`);
         
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 
-                // Nếu sai pass/email
+                // SỬA LỖI: Đuổi về/Chặn đứng lập tức dòng lệnh thực thi phía sau nếu thông tin sai lệch
                 if (error) { 
                     alert("Mật khẩu hoặc Email sai rồi bro ơi! Vui lòng kiểm tra lại."); 
                     return; 
                 } 
                 
-                // Nếu đúng pass
+                // Nếu đúng thông tin, cho phép mở khóa
                 if (data && data.session) {
                     document.getElementById("auth-screen").style.display = "none"; 
                     fetchDriveData(); 
@@ -334,8 +334,7 @@
             try {
                 const { data, error } = await supabase.from('drive').select('*');
                 if (error) {
-                    // Nếu vẫn dính 403, nhắc nhở cấu hình RLS thẳng trên UI
-                    gridUi.innerHTML = `<p style='color:red;'>Lỗi kết nối bộ nhớ (403/RLS Blocked)! <br>Bro hãy vào Supabase Dashboard -> Table drive -> bấm DISABLE RLS nhé!</p>`;
+                    gridUi.innerHTML = `<p style='color:red;'>Lỗi kết nối bộ nhớ dữ liệu.</p>`;
                     console.error(error);
                     return;
                 }
@@ -414,7 +413,7 @@
                 { name: folderName.trim(), is_folder: true, parent_id: currentFolderId }
             ]);
 
-            if (error) alert("Không thể tạo thư mục! Hãy chắc chắn đã tắt RLS cho bảng này.");
+            if (error) alert("Không thể tạo thư mục! Hãy chắc chắn đã cấu hình quyền cho bảng này.");
             else fetchDriveData();
         });
 
@@ -432,7 +431,6 @@
             statusText.style.display = "block";
             statusText.innerText = "⏳ Đang kết nối Supabase Storage...";
 
-            // Chuyển đổi tên file sạch để chống lỗi kí tự đặc biệt tiếng Việt
             const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
             const storagePath = `${Date.now()}_${cleanName}`;
 
@@ -451,7 +449,7 @@
             ]);
 
             if (dbError) {
-                statusText.innerText = "❌ Lỗi lưu dữ liệu cấu trúc (Hãy kiểm tra RLS).";
+                statusText.innerText = "❌ Lỗi lưu dữ liệu cấu trúc.";
             } else {
                 statusText.innerText = "✅ Tải lên đám mây thành công 100%!";
                 fileChooser.value = "";
