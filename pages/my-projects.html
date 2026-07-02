@@ -118,7 +118,7 @@
         // 🛠️ BẮT BUỘC CHỜ TRANG LOAD XONG 100% MỚI KHỞI TẠO ĐỂ TRÁNH LỖI "NOT DEFINED"
         window.onload = async () => {
             // Khởi tạo client an toàn tại đây
-            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             // Kiểm tra phiên đăng nhập tự động
             const { data: { session } } = await supabase.auth.getSession();
